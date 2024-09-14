@@ -1,0 +1,45 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "colcon build debug",
+            "type": "shell",
+            "command": "colcon",
+            "args": [
+                "--log-base", 
+                "//home/mark/workspaces/humble_ws/log",
+                "build",
+                "--build-base",
+                "/home/mark/workspaces/humble_ws/build",
+                "--install-base",
+                "/home/mark/workspaces/humble_ws/install",
+                "--cmake-args",
+                "-DCMAKE_BUILD_TYPE=Debug"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "colcon build",
+            "type": "shell",
+            "command": "colcon",
+            "args": [
+                "--log-base", 
+                "/home/mark/workspaces/humble_ws/log",
+                "build",
+                "--build-base",
+                "/home/mark/workspaces/humble_ws/build",
+                "--install-base",
+                "/home/mark/workspaces/humble_ws/install"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

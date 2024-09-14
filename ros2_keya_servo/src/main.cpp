@@ -29,6 +29,7 @@ SOFTWARE.
 #include "std_msgs/msg/int32.hpp"
 #include "can_msgs/msg/frame.hpp"
 
+#include "ros2_keya_servo_msgs/msg/servo_status.hpp"
 #include "ros2_keya_servo_msgs/srv/position.hpp"
 
 using namespace std::chrono_literals;
@@ -117,6 +118,9 @@ class KeyaServo : public rclcpp::Node
       heartbeat_timer_ = this->create_wall_timer(
         heartbeat_interval_, std::bind(&KeyaServo::sendHeartbeat, this));
 
+      status_timer_ = this->create_wall_timer(
+        status_interval_, std::bind(&KeyaServo::sendStatus, this));
+
       can_subscriber_ = this->create_subscription<can_msgs::msg::Frame>(
         "/from_can_bus", 10, std::bind(&KeyaServo::can_callback, this, _1));
 
@@ -124,6 +128,8 @@ class KeyaServo : public rclcpp::Node
         "/position", 1, std::bind(&KeyaServo::position_callback, this, _1));
 
       can_publisher_ = this->create_publisher<can_msgs::msg::Frame>("/to_can_bus", 500);
+
+      status_publisher_ = this->create_publisher<ros2_keya_servo_msgs::msg::ServoStatus>("/servo_status", 10);
 
       // Create a ROS 2 service to expose an integer value for the position of the servo
       position_service_ = this->create_service<ros2_keya_servo_msgs::srv::Position>(
@@ -154,13 +160,15 @@ class KeyaServo : public rclcpp::Node
         return;
       }
 
-      // Check if the message is a heartbeat
-      if (msg->data[0] == 0x07)
-      {
-        // Read position value from heartbeat and set it as current_position_
-        int32_t position = (msg->data[4] << 8) | msg->data[5];
-        current_position_ = position;
-      }
+      // Read position value from heartbeat and set it as current_position_
+      servo_status_.angle = (msg->data[0] << 8) | msg->data[1];
+      current_position_ = servo_status_.angle;
+  
+      servo_status_.speed = (msg->data[2] << 8) | msg->data[3];
+      servo_status_.rated_speed = (msg->data[4] << 8) | msg->data[5];
+      servo_status_.fault_code = (msg->data[6] << 8) | msg->data[7];
+
+      //RCLCPP_INFO(this->get_logger(), "Position: %d, Speed: %d, Rated Speed: %d, Fault Code: %d", position, speed, rated_speed, fault_code);
     }
 
     void position_callback(const std_msgs::msg::Int32::SharedPtr msg)
@@ -191,6 +199,20 @@ class KeyaServo : public rclcpp::Node
     {
       uint8_t data[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
       send_can_message(can_id_ + 0x06000000, data);
+    }
+
+    void sendStatus()
+    {
+    
+      //servo_status_.angle = current_position_;
+
+      //auto status_p = std::make_unique<ros2_keya_servo_msgs::msg::ServoStatus>(servo_status_);
+
+      //publish a servostatus message 
+      //status_publisher_->publish(std::move(status_p));
+
+
+      status_publisher_->publish(servo_status_);
     }
 
     void sendEnable()
@@ -261,16 +283,21 @@ class KeyaServo : public rclcpp::Node
 
   uint32_t can_id_ = 1;
   std::chrono::milliseconds heartbeat_interval_ = 500ms;
+  std::chrono::milliseconds status_interval_ = 1000ms;
   int32_t current_position_ = 0;
+
+  ros2_keya_servo_msgs::msg::ServoStatus servo_status_;
 
   bool speed_or_position_ = true; // True = speed, False = position
 
   rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr position_subscriber_;
   rclcpp::Service<ros2_keya_servo_msgs::srv::Position>::SharedPtr position_service_;
+  rclcpp::Publisher<ros2_keya_servo_msgs::msg::ServoStatus>::SharedPtr status_publisher_;
 
   rclcpp::Subscription<can_msgs::msg::Frame>::SharedPtr can_subscriber_;
   rclcpp::Publisher<can_msgs::msg::Frame>::SharedPtr can_publisher_;
   rclcpp::TimerBase::SharedPtr heartbeat_timer_;
+  rclcpp::TimerBase::SharedPtr status_timer_;
 };
 
 int main(int argc, char * argv[])
