@@ -11,20 +11,9 @@
             "request": "launch",
             "target": "/home/mark/workspaces/humble_ws/src/ros2_keya_servo/ros2_keya_servo/launch/ros2_keya_servo.launch.py",
             "arguments": [
-                "use_front_cameras:=False",
-                "use_surround_cameras:=False",
-                "use_front_lidar:=False",
-                "use_surround_lidars:=False",
-                "use_radar:=False",
-                "use_ntrip:=False",
-                "record_rosbag:=False",
-                "use_robot_state_pub:=False",
-                "use_gnss:=False",
-                "use_socketcan:=False",
-                "publish_map_base_link:=False",
-                "use_foxglove_bridge:=False"
+                "start_socketcan:=False"
             ],
-            "launch": ["rviz","v4l2_camera_node"],
+            "launch": [],
             "type": "ros",
             "preLaunchTask": "colcon build debug"
         },
@@ -32,7 +21,10 @@
             "name": "ROS: Launch",
             "request": "launch",
             "target": "/home/mark/workspaces/humble_ws/src/ros2_keya_servo/ros2_keya_servo/launch/ros2_keya_servo.launch.py",
-            "launch": ["rviz","v4l2_camera_node"],
+            "arguments": [
+                "start_socketcan:=False"
+            ],
+            "launch": [],
             "type": "ros",
             "preLaunchTask": "colcon build"
         }

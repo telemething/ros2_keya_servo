@@ -14,7 +14,8 @@
                 "--install-base",
                 "/home/mark/workspaces/humble_ws/install",
                 "--cmake-args",
-                "-DCMAKE_BUILD_TYPE=Debug"
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "-Wno-dev"
             ],
             "problemMatcher": [],
             "group": {
@@ -33,7 +34,9 @@
                 "--build-base",
                 "/home/mark/workspaces/humble_ws/build",
                 "--install-base",
-                "/home/mark/workspaces/humble_ws/install"
+                "/home/mark/workspaces/humble_ws/install",
+                "--cmake-args",
+                "-Wno-dev"
             ],
             "problemMatcher": [],
             "group": {
